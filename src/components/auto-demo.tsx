@@ -70,7 +70,8 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
   const shownRules = phase === "rules" ? Math.ceil(demo.mandate.rules.length * ((ms - t2) / (RULES * 0.8))) : demo.mandate.rules.length;
   // Agent position along the track: start (0) → each gate → finish (100)
   const stops = gates.length + 1;
-  const agentPos = phase === "intro" || phase === "config" || phase === "rules" ? 2 : phase === "verdict" ? 96 : ((gateIdx + 1) / (stops + 0)) * 92 * Math.min(1, 0.4 + gateFrac * 2) + 2;
+  const posOf = (i: number) => 8 + ((i + 1) / stops) * 84;
+  const agentPos = phase === "verdict" ? 92 : phase === "gates" ? posOf(gateIdx) - (gateFrac < 0.3 ? 4 : 0) : 6;
   const caption = phase === "intro" ? s.intro : phase === "config" ? s.config : phase === "rules" ? s.rules : phase === "gates" ? s.gate(gateIdx + 1, gates.length) : s.verdict;
   const agentLight: Light = phase === "verdict" ? finalFlag : gateIdx >= 0 && revealed(gateIdx) ? gates[gateIdx]!.light : "grey";
   const title = (d: Demo) => lang === "pt" ? PT_DEMOS[d.id]?.title ?? d.title : d.title;
@@ -83,12 +84,12 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
     {/* Game track */}
     <div className="relative h-40 overflow-hidden rounded-xl border bg-muted/40 px-4">
       <div className="absolute inset-x-6 top-[88px] h-2 rounded-full bg-border"/>
-      <div className="absolute left-6 top-[88px] h-2 rounded-full bg-primary/50 transition-[width] duration-1000 ease-linear" style={{ width: `calc(${agentPos}% - 1.5rem)` }}/>
-      {gates.map((g, i) => { const on = revealed(i); const L = LIGHT[g.light]; const Ic = L.icon; const left = ((i + 1) / stops) * 92 + 2; return <div key={i} className="absolute top-[52px] -translate-x-1/2 text-center" style={{ left: `${left}%` }}>
+      <div className="absolute left-6 top-[88px] h-2 rounded-full bg-primary/50 transition-[width] duration-[2500ms] ease-linear" style={{ width: `calc(${agentPos}% - 1.5rem)` }} aria-hidden/>
+      {gates.map((g, i) => { const on = revealed(i); const L = LIGHT[g.light]; const Ic = L.icon; const left = posOf(i); return <div key={i} className="absolute top-[52px] -translate-x-1/2 text-center" style={{ left: `${left}%` }}>
         <div className={`mx-auto grid size-20 place-items-center rounded-full border-4 transition-all duration-700 ${on ? `${L.ring} scale-110` : "border-dashed border-border bg-background"} ${on && g.light === "red" ? "animate-flag-pulse" : ""}`}>{on ? <Ic className={`size-9 ${L.text} animate-fade-up`}/> : <span className="text-lg font-bold text-muted-foreground">{i + 1}</span>}</div>
       </div>; })}
-      <div className="absolute top-[52px] -translate-x-1/2" style={{ left: "96%" }}><FlagIcon className={`size-8 ${phase === "verdict" ? LIGHT[finalFlag].text : "text-muted-foreground"} transition-colors duration-700`}/></div>
-      <div className="absolute top-2 -translate-x-1/2 transition-[left] duration-1000 ease-linear" style={{ left: `${agentPos}%` }}>
+      <div className="absolute top-[52px] -translate-x-1/2" style={{ left: "94%" }}><FlagIcon className={`size-8 ${phase === "verdict" ? LIGHT[finalFlag].text : "text-muted-foreground"} transition-colors duration-700`}/></div>
+      <div className="absolute top-2 -translate-x-1/2 transition-[left] duration-[2500ms] ease-linear" style={{ left: `${agentPos}%` }}>
         <div className={`grid size-14 place-items-center rounded-2xl text-primary-foreground shadow-lg transition-colors duration-700 animate-agent-bob ${agentLight === "grey" ? "bg-primary" : LIGHT[agentLight].bg}`}><Bot className="size-8"/></div>
       </div>
     </div>
