@@ -165,3 +165,6 @@
 @keyframes rc-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @utility animate-grow-x { transform-origin: left; animation: rc-grow-x 0.7s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .animate-grow-x { animation: none; } }
+@keyframes rc-agent-bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+@utility animate-agent-bob { animation: rc-agent-bob 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .animate-agent-bob { animation: none; } }
