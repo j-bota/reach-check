@@ -24,8 +24,25 @@ function download(name: string, content: string, type: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 type Screen = "import" | "mandate" | "review" | "export";
+type Flag = "red" | "yellow" | "green";
+const FLAG: Record<Flag, { label: string; card: string; dot: string; badge: string }> = {
+  red: { label: "Red flag", card: "border-risk-high bg-risk-high-bg", dot: "bg-risk-high", badge: "bg-risk-high text-primary-foreground" },
+  yellow: { label: "Yellow flag", card: "border-risk-medium bg-risk-medium-bg", dot: "bg-risk-medium", badge: "bg-risk-medium text-primary-foreground" },
+  green: { label: "Green flag", card: "border-risk-low bg-risk-low-bg", dot: "bg-risk-low", badge: "bg-risk-low text-primary-foreground" },
+};
+const DEMO_FLAGS: Record<string, Flag> = { "email-assistant": "red", "mcp-assistant": "yellow", "n8n-workflow": "yellow" };
+const SAMPLE_FLAGS: Flag[] = ["yellow", "green", "red", "red"];
+const DEFAULT_SAMPLE = 3;
+function FlagBadge({ flag }: { flag: Flag }) {
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${FLAG[flag].badge} ${flag === "red" ? "animate-flag-pulse" : ""}`}><span className="size-2 rounded-full bg-primary-foreground"/>{FLAG[flag].label}</span>;
+}
+function FlagLegend() {
+  const items: [Flag, string][] = [["red", "Needs attention: hidden instructions or actions beyond what you allowed"], ["yellow", "Unclear: permissions or approvals not proven"], ["green", "Looks contained in what was supplied"]];
+  return <ul className="grid gap-2 rounded-lg border p-3 text-sm sm:grid-cols-3">{items.map(([f, t], i) => <li key={f} style={{ animationDelay: `${i * 100}ms` }} className="animate-fade-up flex items-start gap-2"><span className={`mt-1 size-3 shrink-0 rounded-full ${FLAG[f].dot}`}/><span><b>{FLAG[f].label}</b> — {t}</span></li>)}</ul>;
+}
 function Index() {
-  const [input, setInput] = useState(""); const [inputVersion, setInputVersion] = useState(1);
+  const [input, setInput] = useState(SAMPLES[DEFAULT_SAMPLE]?.value ?? ""); const [inputVersion, setInputVersion] = useState(1);
+  const [sampleIdx, setSampleIdx] = useState<number | null>(DEFAULT_SAMPLE); const [path, setPath] = useState<"demo" | "own">("demo");
   const [mandate, setMandate] = useState<Mandate>(emptyMandate);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [screen, setScreen] = useState<Screen>("import"); const [error, setError] = useState("");
