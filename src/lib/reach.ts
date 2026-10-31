@@ -24,7 +24,7 @@ const toolSchema = z.object({ name: z.string().min(1), description: z.string().o
 const serverSchema = z.object({ url: z.string().optional(), command: z.string().optional(), args: z.array(z.string()).optional(), env: z.record(z.string()).optional(), tools: z.array(toolSchema).optional(), scopes: z.union([z.string(), z.array(z.string())]).optional() }).passthrough();
 const nodeSchema = z.object({ name: z.string(), type: z.string(), parameters: z.record(z.unknown()).optional(), typeVersion: z.number().optional() }).passthrough();
 const escapePointer = (s: string) => s.replace(/~/g, "~0").replace(/\//g, "~1");
-const source = (pointer: string, value: unknown): Source => ({ pointer: maskSecretsInText(pointer), excerpt: excerpt(value) });
+const source = (pointer: string, value: unknown): Source => ({ pointer: maskSecretsInText(pointer), excerpt: JSON.stringify(redact(value, pointer.split("/").at(-1) ?? ""), null, 2) });
 const safeName = (s: string) => maskSecretsInText(s);
 const BASE_LIMITATIONS = [
   "Only the supplied snapshot is inspected; it may omit tools, workflow branches, credentials and deployment settings.",
@@ -54,7 +54,7 @@ export function analyse(input: string, inputVersion = 1): Review {
   };
   if (Array.isArray(parsed) || (parsed && typeof parsed === "object" && "tools" in parsed && !("mcpServers" in parsed) && !("servers" in parsed))) {
     const wrapped = !Array.isArray(parsed);
-    const list = wrapped ? (parsed as Record<string, unknown>).tools : parsed;
+    const list = wrapped ? (parsed as Record<string, unknown>)["tools"] : parsed;
     const result = z.array(toolSchema).safeParse(list);
     if (!result.success) throw new Error("Invalid tool inventory. Supply an array of tools with a non-empty name and optional text description.");
     review.format = "MCP tool inventory";
@@ -77,17 +77,17 @@ export function analyse(input: string, inputVersion = 1): Review {
       if (s.env && Object.keys(s.env).length) finding("Environment values supplied", "Unknown", source(`${pointer}/env`, s.env), "Environment values are masked in evidence; imported credentials are not tested.", "Whether these are active secrets or references, and what access they grant.", "Review credential storage and scopes; rotate any exposed live credentials.", "Medium");
     });
   } else if (parsed && typeof parsed === "object" && "nodes" in parsed) {
-    const result = z.array(nodeSchema).safeParse((parsed as Record<string, unknown>).nodes);
+    const result = z.array(nodeSchema).safeParse((parsed as Record<string, unknown>)["nodes"]);
     if (!result.success) throw new Error("Invalid n8n snapshot. nodes must be an array with text name, type and object parameters.");
     review.format = "n8n workflow snapshot (limited operations)";
     result.data.forEach((node, i) => {
       const p = node.parameters ?? {};
       const src = source(`/nodes/${i}`, node);
-      const gmail = node.type === "n8n-nodes-base.gmail" && node.typeVersion === 2 && p.resource === "message";
+      const gmail = node.type === "n8n-nodes-base.gmail" && node.typeVersion === 2 && p["resource"] === "message";
       const rules: Record<string, Action> = { send: "send", get: "read", getAll: "read", delete: "delete" };
-      const action = gmail && typeof p.operation === "string" ? rules[p.operation] : undefined;
+      const action = gmail && typeof p["operation"] === "string" ? rules[p["operation"]] : undefined;
       if (action) {
-        const target = action === "send" ? p.sendTo : p.messageId;
+        const target = action === "send" ? p["sendTo"] : p["messageId"];
         const resource = typeof target === "string" && target && !target.includes("{{") ? safeName(target) : "email (scope unknown)";
         review.actions.push({ action, resource, source: src, integration: "n8n Gmail v2 / message" });
         if (resource.includes("unknown")) finding("Operation scope unresolved", "Unknown", src, "A recognised operation lacks a static resource scope or uses an expression.", "The resolved recipients, messages and credential permissions.", "Inspect expression results and test the operation with deployment credentials.");
