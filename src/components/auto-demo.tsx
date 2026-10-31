@@ -42,11 +42,13 @@ const LIGHT: Record<Light, { bg: string; text: string; ring: string; icon: typeo
   grey: { bg: "bg-muted-foreground", text: "text-muted-foreground", ring: "border-border bg-muted", icon: HelpCircle },
 };
 const fromStatus: Record<RowStatus, Light> = { conflict: "red", review: "yellow", within: "green", "not-compared": "grey" };
-const TOTAL_MS = 60000; const INTRO = 5000, CONFIG = 12000, RULES = 11000, VERDICT = 10000;
+const TOTAL_MS = 50000; const INTRO = 6000, CONFIG = 10000, RULES = 10000, VERDICT = 10000;
+const TOUR = ["n8n-inbox-reader", "email-assistant", "chatgpt-connector", "n8n-workflow", "n8n-auto-sender", "mcp-assistant"];
 
 export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClose: () => void }) {
   const { lang } = useT(); const s = S[lang];
-  const [id, setId] = useState(DEMOS[2]?.id ?? DEMOS[0]!.id);
+  const order = TOUR.map(x => DEMOS.find(d => d.id === x)).filter((d): d is Demo => !!d);
+  const [id, setId] = useState(order[0]!.id); const [tour, setTour] = useState(true); const [done_, setDone] = useState<Record<string, Flag>>({});
   const demo = DEMOS.find(d => d.id === id)!;
   const [ms, setMs] = useState(0); const [playing, setPlaying] = useState(true);
   const assessment = useMemo(() => compare(analyse(demo.config, 1), demo.mandate), [demo]);
@@ -61,6 +63,14 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
   useEffect(() => { setMs(0); setPlaying(true); }, [id]);
   useEffect(() => { if (!playing || ms >= TOTAL_MS) return; const iv = setInterval(() => setMs(m => Math.min(TOTAL_MS, m + 100)), 100); return () => clearInterval(iv); }, [playing, ms >= TOTAL_MS]);
 
+  useEffect(() => {
+    if (ms < TOTAL_MS) return;
+    setDone(d => ({ ...d, [id]: verdict(assessment) }));
+    if (!tour) return;
+    const i = order.findIndex(d => d.id === id);
+    const tm = setTimeout(() => setId(order[(i + 1) % order.length]!.id), 2500);
+    return () => clearTimeout(tm);
+  }, [ms >= TOTAL_MS, id, tour]);
   const phase = ms < t1 ? "intro" : ms < t2 ? "config" : ms < t3 ? "rules" : ms < t4 ? "gates" : "verdict";
   const gateIdx = phase === "gates" ? Math.floor((ms - t3) / GATE) : phase === "verdict" ? gates.length : -1;
   const gateFrac = phase === "gates" ? ((ms - t3) % GATE) / GATE : 0;
@@ -79,7 +89,16 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
 
   return <section aria-label={s.title} className="animate-fade-up space-y-5 rounded-2xl border-2 border-primary bg-card p-5 shadow-xl">
     <div className="flex items-center justify-between gap-2"><h2 className="text-2xl font-extrabold">{s.title}</h2><Button variant="ghost" size="icon" aria-label={s.close} onClick={onClose}><X/></Button></div>
-    <div role="tablist" className="flex flex-wrap gap-2">{DEMOS.map(d => <button key={d.id} role="tab" aria-selected={d.id === id} onClick={() => setId(d.id)} className={`rounded-full border px-3 py-1 text-xs font-bold transition-all active:scale-95 ${d.id === id ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{title(d)}</button>)}</div>
+    <div className="rounded-xl border bg-muted/40 p-3">
+      <div className="mb-2 flex items-center justify-between gap-2"><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{lang === "pt" ? "Percurso pelos exemplos" : "Tour of examples"} · {order.findIndex(d => d.id === id) + 1}/{order.length}</p><label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" className="accent-primary" checked={tour} onChange={e => setTour(e.target.checked)}/>{lang === "pt" ? "Continuar sozinho" : "Keep going by itself"}</label></div>
+      <div role="tablist" className="relative grid gap-2" style={{ gridTemplateColumns: `repeat(${order.length}, minmax(0, 1fr))` }}>
+        <div className="absolute inset-x-6 top-5 h-1 rounded-full bg-border"/>
+        {order.map(d => { const f = done_[d.id]; const cur = d.id === id; return <button key={d.id} role="tab" aria-selected={cur} onClick={() => setId(d.id)} className="relative flex min-w-0 flex-col items-center gap-1 text-center transition-transform active:scale-95">
+          <span className={`relative grid size-10 place-items-center rounded-full border-4 transition-all duration-700 ${f ? LIGHT[f].ring : "border-dashed border-border bg-background"} ${cur ? "scale-125 ring-2 ring-primary ring-offset-2 ring-offset-background" : ""} ${f === "red" ? "animate-flag-pulse" : ""}`}>{cur ? <Bot className="size-5 text-primary animate-agent-bob"/> : f ? (() => { const I = LIGHT[f].icon; return <I className={`size-5 ${LIGHT[f].text}`}/>; })() : <HelpCircle className="size-4 text-muted-foreground"/>}</span>
+          <span className={`line-clamp-2 text-[10px] font-semibold leading-tight ${cur ? "text-primary" : "text-muted-foreground"}`}>{title(d)}</span>
+        </button>; })}
+      </div>
+    </div>
 
     {/* Game track */}
     <div className="relative h-40 overflow-hidden rounded-xl border bg-muted/40 px-4">
@@ -112,7 +131,7 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
       {!done ? <Button variant="outline" onClick={() => setPlaying(p => !p)}>{playing ? <><Pause/>{s.pause}</> : <><Play/>{s.play}</>}</Button>
         : <Button variant="outline" onClick={() => { setMs(0); setPlaying(true); }}><RotateCcw/>{s.replay}</Button>}
       <Button onClick={() => onOpen(demo)}>{s.open}<ArrowRight/></Button>
-      <span className="text-xs tabular-nums text-muted-foreground">{Math.floor(ms / 1000)}s / 60s</span>
+      <span className="text-xs tabular-nums text-muted-foreground">{Math.floor(ms / 1000)}s / {TOTAL_MS / 1000}s</span>
       <p className="text-xs text-muted-foreground">{s.sample}</p>
     </div>
   </section>;
