@@ -21,3 +21,10 @@ describe("verdict", () => {
     expect(actionMatrix(a).every(r => r.status === "not-compared")).toBe(true);
   });
 });
+
+describe("demo colours", () => {
+  it("ChatGPT connector with hidden instruction is red", () => expect(verdict(run("chatgpt-connector"))).toBe("red"));
+  it("n8n auto-sender breaking a Never rule is red", () => expect(verdict(run("n8n-auto-sender"))).toBe("red"));
+  it("n8n inbox reader that only reads is green", () => expect(verdict(run("n8n-inbox-reader"))).toBe("green"));
+  it("Gmail assistant is yellow", () => expect(verdict(run("email-assistant"))).toBe("yellow"));
+});

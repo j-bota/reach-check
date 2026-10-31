@@ -103,7 +103,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
 export const useT = () => useContext(Ctx);
 
 export const PT_DEMOS: Record<string, { title: string; tagline: string }> = {
-  "email-assistant": { title: "Assistente de email", tagline: "Um assistente devia apenas redigir respostas, mas a configuração inclui enviar emails." },
+  "email-assistant": { title: "Assistente Gmail", tagline: "Um assistente Gmail devia apenas redigir respostas, mas a configuração declara uma ferramenta de envio." },
+  "chatgpt-connector": { title: "Conector ChatGPT", tagline: "Um conector ChatGPT para notas contém uma instrução escondida na descrição de uma ferramenta." },
+  "n8n-inbox-reader": { title: "Leitor de caixa n8n", tagline: "Um fluxo que só lê uma mensagem — exatamente o que o responsável permitiu." },
+  "n8n-auto-sender": { title: "Envio automático n8n", tagline: "O responsável disse para nunca enviar emails, mas o fluxo tem um passo de envio." },
   "mcp-assistant": { title: "Assistente Claude / MCP", tagline: "Um assistente devia apenas ler documentos, mas as ferramentas declaradas também incluem editar ficheiros." },
   "n8n-workflow": { title: "Fluxo n8n", tagline: "Um fluxo devia preparar uma resposta para aprovação, mas inclui um passo configurado de envio de email." },
 };

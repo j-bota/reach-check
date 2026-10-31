@@ -6,6 +6,7 @@ import { MandateEditor, fieldClass } from "@/components/mandate-editor";
 import { AssessmentReview } from "@/components/assessment-review";
 import { DemoSummary } from "@/components/demo-review";
 import { VerdictPanel } from "@/components/verdict-panel";
+import { verdict } from "@/lib/verdict";
 import { AutoDemo } from "@/components/auto-demo";
 import { analyse, SAMPLES } from "@/lib/reach";
 import { compare, editMandate, emptyMandate, exampleMandate, isStale, toMarkdown, toJSON, type Assessment, type Mandate } from "@/lib/mandate";
@@ -34,7 +35,7 @@ const FLAG: Record<Flag, { label: string; card: string; dot: string; badge: stri
   yellow: { label: "Yellow flag", card: "border-risk-medium bg-risk-medium-bg", dot: "bg-risk-medium", badge: "bg-risk-medium text-primary-foreground" },
   green: { label: "Green flag", card: "border-risk-low bg-risk-low-bg", dot: "bg-risk-low", badge: "bg-risk-low text-primary-foreground" },
 };
-const DEMO_FLAGS: Record<string, Flag> = { "email-assistant": "red", "mcp-assistant": "yellow", "n8n-workflow": "yellow" };
+const DEMO_FLAGS: Record<string, Flag> = Object.fromEntries(DEMOS.map(d => [d.id, verdict(compare(analyse(d.config, 1), d.mandate))]));
 const SAMPLE_FLAGS: Flag[] = ["yellow", "green", "red", "red"];
 const DEFAULT_SAMPLE = 3;
 function FlagBadge({ flag }: { flag: Flag }) {
