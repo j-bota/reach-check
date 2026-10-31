@@ -15,7 +15,7 @@ export function redact(value: unknown, key = ""): unknown {
   if (Array.isArray(value)) return value.map((v) => redact(v, key));
   if (value && typeof value === "object") {
     const obj = value as Record<string, unknown>;
-    const headerName = obj.name ?? obj.key;
+    const headerName = obj["name"] ?? obj["key"];
     const secretPair = typeof headerName === "string" && sensitiveKey.test(headerName);
     return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k,
       (key === "env" || (secretPair && k === "value")) ? "[REDACTED]" : redact(v, k),
