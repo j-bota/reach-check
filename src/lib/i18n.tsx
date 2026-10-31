@@ -101,3 +101,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={{ lang, setLang, t: DICTS[lang] }}>{children}</Ctx.Provider>;
 }
 export const useT = () => useContext(Ctx);
+
+export const PT_DEMOS: Record<string, { title: string; tagline: string }> = {
+  "email-assistant": { title: "Assistente de email", tagline: "Um assistente devia apenas redigir respostas, mas a configuração inclui enviar emails." },
+  "mcp-assistant": { title: "Assistente Claude / MCP", tagline: "Um assistente devia apenas ler documentos, mas as ferramentas declaradas também incluem editar ficheiros." },
+  "n8n-workflow": { title: "Fluxo n8n", tagline: "Um fluxo devia preparar uma resposta para aprovação, mas inclui um passo configurado de envio de email." },
+};
+export const PT_SAMPLES = ["Só servidor — inventário em falta", "Ferramentas de email declaradas — permissões desconhecidas", "Envenenado — descrição meteorológica suspeita", "Envio Gmail configurado — instantâneo n8n"];
