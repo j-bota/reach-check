@@ -42,7 +42,7 @@ function FlagBadge({ flag }: { flag: Flag }) {
 function FlagLegend() {
   const { t } = useT();
   const items: [Flag, string][] = [["red", t.legendRed], ["yellow", t.legendYellow], ["green", t.legendGreen]];
-  return <ul className="grid gap-2 rounded-lg border p-3 text-sm sm:grid-cols-3">{items.map(([f, t], i) => <li key={f} style={{ animationDelay: `${i * 100}ms` }} className="animate-fade-up flex items-start gap-2"><span className={`mt-1 size-3 shrink-0 rounded-full ${FLAG[f].dot}`}/><span><b>{t[FLAG_KEY[f]]}</b> — {t}</span></li>)}</ul>;
+  return <ul className="grid gap-2 rounded-lg border p-3 text-sm sm:grid-cols-3">{items.map(([f, desc], i) => <li key={f} style={{ animationDelay: `${i * 100}ms` }} className="animate-fade-up flex items-start gap-2"><span className={`mt-1 size-3 shrink-0 rounded-full ${FLAG[f].dot}`}/><span><b>{t[FLAG_KEY[f]]}</b> — {desc}</span></li>)}</ul>;
 }
 function Index() {
   const { t, lang, setLang } = useT();
