@@ -162,3 +162,6 @@
 @utility animate-fade-up { animation: rc-fade-up 0.4s ease-out both; }
 @utility animate-flag-pulse { animation: rc-flag-pulse 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .animate-fade-up, .animate-flag-pulse { animation: none; } }
+@keyframes rc-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@utility animate-grow-x { transform-origin: left; animation: rc-grow-x 0.7s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .animate-grow-x { animation: none; } }
