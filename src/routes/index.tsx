@@ -63,7 +63,7 @@ function Index() {
     try { setAssessment(compare(analyse(d.config, v), d.mandate)); go("review"); }
     catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); }
   }
-  function ownConfig() { setDemoId(null); setInput(""); setMandate(emptyMandate()); setAssessment(null); go("import"); }
+  function ownConfig() { setDemoId(null); setInput(""); setSampleIdx(null); setPath("own"); setMandate(emptyMandate()); setAssessment(null); go("import"); }
   function importConfig() { setDemoId(null); try { analyse(input, inputVersion); go("mandate"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); } }
   function review() { try { setAssessment(compare(analyse(input, inputVersion), mandate)); go("review"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); } }
   return <div className="min-h-screen bg-background font-sans text-foreground">
