@@ -84,9 +84,9 @@ function levelOf(caps: Capability[]): Level {
 }
 
 function normalise(parsed: unknown): Record<string, RawServer> {
-  if (Array.isArray(parsed)) return { tools: { tools: parsed as RawServer["tools"] } };
+  if (Array.isArray(parsed)) return { tools: { tools: parsed as NonNullable<RawServer["tools"]> } };
   const obj = (parsed ?? {}) as Record<string, unknown>;
-  const servers = (obj.mcpServers ?? obj.servers ?? obj) as Record<string, RawServer>;
+  const servers = (obj["mcpServers"] ?? obj["servers"] ?? obj) as Record<string, RawServer>;
   return servers;
 }
 

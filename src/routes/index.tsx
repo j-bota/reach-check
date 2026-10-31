@@ -118,7 +118,7 @@ function Index() {
               <select
                 value=""
                 onChange={(e) => {
-                  setInput(SAMPLES[Number(e.target.value)].value);
+                  setInput(SAMPLES[Number(e.target.value)]!.value);
                   setError("");
                 }}
                 className="rounded-lg border-2 border-input bg-background px-4 py-3.5 text-lg font-semibold"

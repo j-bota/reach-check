@@ -3,10 +3,10 @@ import { analyse, SAMPLES, toMarkdown } from "./reach";
 
 describe("reach rules", () => {
   it("safe sample is low risk", () => {
-    expect(analyse(SAMPLES[0].value).overall).toBe("low");
+    expect(analyse(SAMPLES[0]!.value).overall).toBe("low");
   });
   it("risky sample flags root, http, unpinned, secret, sign-off", () => {
-    const r = analyse(SAMPLES[1].value);
+    const r = analyse(SAMPLES[1]!.value);
     const titles = r.warnings.map((w) => w.title).join("\n");
     expect(r.overall).toBe("high");
     expect(titles).toMatch(/Over-broad access on "filesystem"/);
@@ -17,11 +17,11 @@ describe("reach rules", () => {
     expect(r.signOff.length).toBeGreaterThanOrEqual(3);
   });
   it("poisoned sample flags hidden instructions", () => {
-    const w = analyse(SAMPLES[2].value).warnings.find((x) => x.title.startsWith("Hidden"));
+    const w = analyse(SAMPLES[2]!.value).warnings.find((x) => x.title.startsWith("Hidden"));
     expect(w?.why).toMatch(/zero-width/);
     expect(w?.why).toMatch(/HTML comment/);
   });
   it("markdown export never contains the raw secret", () => {
-    expect(toMarkdown(analyse(SAMPLES[1].value))).not.toContain("9f8a7b6c5d4e3f2a1b0c");
+    expect(toMarkdown(analyse(SAMPLES[1]!.value))).not.toContain("9f8a7b6c5d4e3f2a1b0c");
   });
 });
