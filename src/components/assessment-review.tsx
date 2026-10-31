@@ -1,7 +1,6 @@
 import { type Assessment } from "@/lib/mandate";
 import { type Source, type Finding } from "@/lib/reach";
 import { useT } from "@/lib/i18n";
-import { VerdictPanel } from "@/components/verdict-panel";
 
 export function EvidenceView({ source }: { source: Source }) {
   const { t } = useT();
@@ -14,7 +13,7 @@ function FindingView({ finding: f }: { finding: Finding }) {
 export function AssessmentReview({ assessment: a }: { assessment: Assessment }) {
   const { t } = useT();
   return <section className="space-y-8">
-    <div className="border-b pb-6"><p className="text-sm font-semibold text-primary">{t.rStep}</p><h1 className="mt-2 text-3xl font-extrabold">{t.coverage}</h1>{t.engineNote && <p className="mt-2 text-sm text-muted-foreground">{t.engineNote}</p>}<div className="mt-4"><VerdictPanel assessment={a}/></div><p className="mt-5 font-semibold">{a.coverage}</p><p className="mt-2 font-semibold">{t.runtime}: {a.runtimePermissions}</p><p className="mt-2 text-sm text-muted-foreground">{a.draftLabel}</p></div>
+    <div className="border-b pb-6"><p className="text-sm font-semibold text-primary">{t.rStep}</p><h1 className="mt-2 text-3xl font-extrabold">{t.coverage}</h1>{t.engineNote && <p className="mt-2 text-sm text-muted-foreground">{t.engineNote}</p>}<p className="mt-5 font-semibold">{a.coverage}</p><p className="mt-2 font-semibold">{t.runtime}: {a.runtimePermissions}</p><p className="mt-2 text-sm text-muted-foreground">{a.draftLabel}</p></div>
     <div><h2 className="mb-3 text-2xl font-bold">{t.servers}</h2>{!a.servers.length && <p className="text-muted-foreground">{t.noServers}</p>}<div className="space-y-3">{a.servers.map((s,i) => <article className="rounded-lg border p-4" key={i}><h3 className="break-all font-semibold">{s.name}</h3><p className="mt-1">{s.inventory === "not-provided" ? t.invNone : t.invTools(s.declaredTools)}</p><p className="text-sm text-muted-foreground">{t.capsUnknown}</p><EvidenceView source={s.source}/></article>)}</div></div>
     <div><h2 className="mb-3 text-2xl font-bold">{t.actionsTitle}</h2>{!a.actions.length && <p className="text-muted-foreground">{t.noActions}</p>}<div className="space-y-3">{a.actions.map((c,i) => <article className="rounded-lg border p-4" key={i}><p className="break-words font-semibold">{c.action} / {c.resource}</p><p className="text-sm text-muted-foreground">{t.configuredOp} · {c.integration}</p><EvidenceView source={c.source}/></article>)}</div></div>
     {!!a.tools.length && <div><h2 className="mb-3 text-2xl font-bold">{t.toolMeta}</h2><div className="space-y-3">{a.tools.map((tl,i) => <article className="rounded-lg border p-4" key={i}><p className="break-all font-mono font-semibold">{tl.name}</p><p className="text-sm text-muted-foreground">{tl.server} · {t.capabilities}: {tl.capabilities}</p>{tl.hints.map((h,j) => <p className="mt-2 break-all text-sm" key={j}>{t.hint}: {h} — {t.notVerified}</p>)}<EvidenceView source={tl.source}/></article>)}</div></div>}
