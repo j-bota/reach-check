@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { ArrowRight, Download, Copy, Upload, ShieldCheck, AlertTriangle } from "lucide-react";
+import { ArrowRight, Download, Copy, Upload, ShieldCheck, AlertTriangle, Play, FileJson } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MandateEditor, fieldClass } from "@/components/mandate-editor";
 import { AssessmentReview } from "@/components/assessment-review";
+import { DemoSummary } from "@/components/demo-review";
 import { analyse, SAMPLES } from "@/lib/reach";
 import { compare, editMandate, emptyMandate, exampleMandate, isStale, toMarkdown, toJSON, type Assessment, type Mandate } from "@/lib/mandate";
+import { DEMOS, DEMO_EXPORT_NOTICE, type Demo } from "@/lib/demos";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -28,13 +30,24 @@ function Index() {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [screen, setScreen] = useState<Screen>("import"); const [error, setError] = useState("");
   const [copied, setCopied] = useState(false); const [importing, setImporting] = useState(false);
+  const [demoId, setDemoId] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
+  const demo = DEMOS.find(d => d.id === demoId) ?? null;
   const stale = !!assessment && isStale(assessment, inputVersion, mandate);
   const md = useMemo(() => assessment ? toMarkdown(assessment) : "", [assessment]);
-  function changeInput(value: string) { setInput(value); setInputVersion(v => v + 1); setError(""); }
+  const mdOut = demo ? `> ${DEMO_EXPORT_NOTICE}\n\n${md}` : md;
+  const jsonOut = () => assessment ? (demo ? JSON.stringify({ demoSampleData: true, notice: DEMO_EXPORT_NOTICE, assessment: JSON.parse(toJSON(assessment)) }, null, 2) : toJSON(assessment)) : "";
+  function changeInput(value: string) { setInput(value); setInputVersion(v => v + 1); setDemoId(null); setError(""); }
   function changeMandate(patch: Partial<Mandate>) { setMandate(m => editMandate(m, patch)); setError(""); }
   function go(s: Screen) { setScreen(s); setError(""); window.scrollTo(0, 0); }
-  function importConfig() { try { analyse(input, inputVersion); go("mandate"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); } }
+  function startDemo(d: Demo) {
+    const v = inputVersion + 1;
+    setInput(d.config); setInputVersion(v); setMandate(d.mandate); setDemoId(d.id); setError("");
+    try { setAssessment(compare(analyse(d.config, v), d.mandate)); go("review"); }
+    catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); }
+  }
+  function ownConfig() { setDemoId(null); setInput(""); setMandate(emptyMandate()); setAssessment(null); go("import"); }
+  function importConfig() { setDemoId(null); try { analyse(input, inputVersion); go("mandate"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); } }
   function review() { try { setAssessment(compare(analyse(input, inputVersion), mandate)); go("review"); } catch (e) { setError(e instanceof Error ? e.message : "Unable to inspect configuration."); } }
   return <div className="min-h-screen bg-background font-sans text-foreground">
     <header className="border-b"><div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4"><Button variant="ghost" className="px-0 text-lg font-extrabold" onClick={() => go("import")}>Reach<span className="-ml-2 text-primary">Check</span></Button><span className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><ShieldCheck className="size-4"/>Browser-local review</span></div></header>
