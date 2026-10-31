@@ -55,7 +55,7 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
   const gates = useMemo(() => {
     const rows = actionMatrix(assessment);
     if (rows.length) return rows.map(r => ({ label: `${r.action} / ${r.resource}`, sub: r.rule, light: fromStatus[r.status] }));
-    return assessment.tools.map(t => ({ label: t.name, sub: s.toolUnknown, light: "yellow" as Light }));
+    return assessment.tools.map(t => { const hot = assessment.findings.find(f => f.priority === "High" && f.source.pointer.startsWith(t.source.pointer)); return { label: t.name, sub: hot ? hot.title : s.toolUnknown, light: (hot ? "red" : "yellow") as Light }; });
   }, [assessment, s]);
   const finalFlag: Flag = verdict(assessment);
   const GATE = (TOTAL_MS - INTRO - CONFIG - RULES - VERDICT) / Math.max(1, gates.length);
