@@ -71,7 +71,7 @@ export function AutoDemo({ onOpen, onClose }: { onOpen: (d: Demo) => void; onClo
   // Agent position along the track: start (0) → each gate → finish (100)
   const stops = gates.length + 1;
   const posOf = (i: number) => 8 + ((i + 1) / stops) * 84;
-  const agentPos = phase === "verdict" ? 92 : phase === "gates" ? posOf(gateIdx) - (gateFrac < 0.3 ? 4 : 0) : 6;
+  const agentPos = phase === "verdict" ? 88 : phase === "gates" ? posOf(gateIdx) - (gateFrac < 0.3 ? 4 : 0) : 6;
   const caption = phase === "intro" ? s.intro : phase === "config" ? s.config : phase === "rules" ? s.rules : phase === "gates" ? s.gate(gateIdx + 1, gates.length) : s.verdict;
   const agentLight: Light = phase === "verdict" ? finalFlag : gateIdx >= 0 && revealed(gateIdx) ? gates[gateIdx]!.light : "grey";
   const title = (d: Demo) => lang === "pt" ? PT_DEMOS[d.id]?.title ?? d.title : d.title;
